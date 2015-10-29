@@ -46,6 +46,8 @@ function get_keys()
 		IFS="="
 		# split line at "=" sign
 		read -r key value <<< "${line}"
+		key=`echo $key | xargs`
+		value=`echo $value | xargs`
 		IFS="${IFS_OLD}"
 		keys="$keys $key"
 	done
@@ -55,7 +57,6 @@ function get_keys()
 #gets the value of a key in a section
 function get_value()
 {
-	keyvalue=
 	sectionName=$1
 	keyName=`echo $2 | xargs`
 	eval "sectionData=(\"\${$sectionName[@]}\")"
@@ -65,11 +66,12 @@ function get_value()
 		read -r key value <<< "${line}"
 		IFS="${IFS_OLD}"
 		key=`echo $key | xargs`
+		value=`echo $value | xargs`
 		if [[ "$key" = "$keyName" ]]; then
 			echo $value
+			break;
 		fi
 	done
-	echo "$keyvalue"
 }
 
 #adds the keys inside a section as bash variables with their values set

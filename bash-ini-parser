@@ -1,0 +1,78 @@
+#reads the file specified
+
+SECTIONS=
+LAST_SECTION=
+
+function readini()
+{
+	INI_FILE=$1;
+	while read -r line || [ -n "$line" ]; do
+		#skip blank lines
+		if [ -z "$line" ]; then
+			continue;
+		fi
+		#skip comments
+		if [ "${line:0:1}" = "#" ]; then
+			continue;
+		fi
+
+		if [[ "$line" =~ ^\[(.*)\]$ ]]; then
+			LAST_SECTION="${BASH_REMATCH[1]}"
+			SECTIONS="$SECTIONS $LAST_SECTION"
+			eval "${LAST_SECTION}=()"
+		else
+			eval "${LAST_SECTION}+=(\"\$line\")"
+		fi
+		
+
+	done <"${INI_FILE}"
+}
+
+#gets a list of all the sections in the file
+function get_sections()
+{
+	echo "$SECTIONS";
+}
+
+
+#gets a list of all keys in a section
+function get_keys()
+{
+	keys=
+	sectionName=$1
+	eval "sectionData=(\"\${$sectionName[@]}\")"
+	for line in "${sectionData[@]}"; do
+		IFS_OLD=$IFS
+		IFS="="
+		# split line at "=" sign
+		read -r key value <<< "${line}"
+		IFS="${IFS_OLD}"
+		keys="$keys $key"
+	done
+	echo "$keys"
+}
+
+#gets the value of a key in a section
+function get_value()
+{
+	keyvalue=
+	sectionName=$1
+	keyName=`echo $2 | xargs`
+	eval "sectionData=(\"\${$sectionName[@]}\")"
+	for line in "${sectionData[@]}"; do
+		IFS_OLD=$IFS
+		IFS="="
+		read -r key value <<< "${line}"
+		IFS="${IFS_OLD}"
+		key=`echo $key | xargs`
+		if [[ "$key" = "$keyName" ]]; then
+			echo $value
+		fi
+	done
+	echo "$keyvalue"
+}
+
+#adds the keys inside a section as bash variables with their values set
+#function load_section()
+#{
+#}

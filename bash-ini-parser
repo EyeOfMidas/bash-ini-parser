@@ -75,6 +75,18 @@ function get_value()
 }
 
 #adds the keys inside a section as bash variables with their values set
-#function load_section()
-#{
-#}
+function load_section()
+{
+	sectionName=$1
+	eval "sectionData=(\"\${$sectionName[@]}\")"
+	for line in "${sectionData[@]}"; do
+		IFS_OLD=$IFS
+		IFS="="
+		read -r key value <<< "${line}"
+		IFS="${IFS_OLD}"
+		key=`echo $key | xargs`
+		value=`echo $value | xargs`
+		eval "$key=\"$value\""
+	done
+
+}

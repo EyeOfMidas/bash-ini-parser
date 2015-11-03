@@ -4,7 +4,7 @@ function readini()
 {
 	INI_FILE=$1;
 	PREFIX=$2
-	eval "${PREFIX}LAST_SECTION="
+	eval "${PREFIX}LAST_SECTION=\"default\""
 	eval "${PREFIX}SECTIONS="
 
 	while read -r line || [ -n "$line" ]; do
@@ -46,7 +46,11 @@ function get_keys()
 		PREFIX=$2
 	fi
 	keys=
-	sectionName=`echo $1 | xargs`
+	section=$1
+	if [ -z $1 ]; then
+		section="default"	
+	fi
+	sectionName=`echo $section | xargs`
 	eval "sectionData=(\"\${${PREFIX}$sectionName[@]}\")"
 	for line in "${sectionData[@]}"; do
 		IFS_OLD=$IFS
@@ -68,8 +72,12 @@ function get_value()
 		PREFIX=$3
 	fi
 
-	sectionName=`echo $1 | xargs`
-	keyName=`echo $2 | xargs`
+	section=$2
+	if [ -z $2 ]; then
+		section="default"	
+	fi
+	sectionName=`echo $section | xargs`
+	keyName=`echo $1 | xargs`
 	eval "sectionData=(\"\${${PREFIX}${sectionName}[@]}\")"
 	for line in "${sectionData[@]}"; do
 		IFS_OLD=$IFS
@@ -91,8 +99,11 @@ function load_section()
 	if [ ! -z $2 ]; then
 		PREFIX=$2
 	fi
-
-	sectionName=`echo $1 | xargs`
+	section=$1
+	if [ -z $1 ]; then
+		section="default"	
+	fi
+	sectionName=`echo $section | xargs`
 	eval "sectionData=(\"\${${PREFIX}${sectionName}[@]}\")"
 	for line in "${sectionData[@]}"; do
 		IFS_OLD=$IFS

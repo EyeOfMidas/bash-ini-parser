@@ -13,7 +13,7 @@ for section in `get_sections`; do
 	echo [$section]
 	for key in $keys; do
 		#get_value will return the value of a key within a section
-		echo $key = `get_value "$section" "$key"`
+		echo $key = `get_value "$key" "$section"`
 	done
 done
 
@@ -39,7 +39,7 @@ for section in `get_sections`; do
 	keys=`get_keys "$section"`
 	echo [$section]
 	for key in $keys; do
-		echo $key = `get_value "$section" "$key"`
+		echo $key = `get_value "$key" "$section"`
 	done
 done
 

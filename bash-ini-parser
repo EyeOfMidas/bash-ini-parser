@@ -1,11 +1,12 @@
 #reads the file specified
-
-SECTIONS=
-LAST_SECTION=
-
+PREFIX=
 function readini()
 {
 	INI_FILE=$1;
+	PREFIX=$2
+	eval "${PREFIX}LAST_SECTION="
+	eval "${PREFIX}SECTIONS="
+
 	while read -r line || [ -n "$line" ]; do
 		#skip blank lines
 		if [ -z "$line" ]; then
@@ -18,10 +19,10 @@ function readini()
 
 		if [[ "$line" =~ ^\[(.*)\]$ ]]; then
 			LAST_SECTION="${BASH_REMATCH[1]}"
-			SECTIONS="$SECTIONS $LAST_SECTION"
-			eval "${LAST_SECTION}=()"
+			eval "${PREFIX}SECTIONS=\"\$${PREFIX}SECTIONS\${LAST_SECTION} \""
+			eval "${PREFIX}${LAST_SECTION}=()"
 		else
-			eval "${LAST_SECTION}+=(\"\$line\")"
+			eval "${PREFIX}${LAST_SECTION}+=(\"\$line\")"
 		fi
 		
 
@@ -31,16 +32,22 @@ function readini()
 #gets a list of all the sections in the file
 function get_sections()
 {
-	echo "$SECTIONS";
+	if [ ! -z $1 ]; then
+		PREFIX=$1
+	fi
+	eval "echo \"\$${PREFIX}SECTIONS\"";
 }
 
 
 #gets a list of all keys in a section
 function get_keys()
 {
+	if [ ! -z $2 ]; then
+		PREFIX=$2
+	fi
 	keys=
 	sectionName=`echo $1 | xargs`
-	eval "sectionData=(\"\${$sectionName[@]}\")"
+	eval "sectionData=(\"\${${PREFIX}$sectionName[@]}\")"
 	for line in "${sectionData[@]}"; do
 		IFS_OLD=$IFS
 		IFS="="
@@ -57,9 +64,13 @@ function get_keys()
 #gets the value of a key in a section
 function get_value()
 {
+	if [ ! -z $3 ]; then
+		PREFIX=$3
+	fi
+
 	sectionName=`echo $1 | xargs`
 	keyName=`echo $2 | xargs`
-	eval "sectionData=(\"\${$sectionName[@]}\")"
+	eval "sectionData=(\"\${${PREFIX}${sectionName}[@]}\")"
 	for line in "${sectionData[@]}"; do
 		IFS_OLD=$IFS
 		IFS="="
@@ -77,8 +88,12 @@ function get_value()
 #adds the keys inside a section as bash variables with their values set
 function load_section()
 {
+	if [ ! -z $2 ]; then
+		PREFIX=$2
+	fi
+
 	sectionName=`echo $1 | xargs`
-	eval "sectionData=(\"\${$sectionName[@]}\")"
+	eval "sectionData=(\"\${${PREFIX}${sectionName}[@]}\")"
 	for line in "${sectionData[@]}"; do
 		IFS_OLD=$IFS
 		IFS="="
@@ -89,4 +104,9 @@ function load_section()
 		eval "$key=\"$value\""
 	done
 
+}
+
+function switch_file()
+{
+	PREFIX=$1
 }
